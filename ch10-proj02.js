@@ -40,65 +40,61 @@ function populateEverything(event){
    .then(response => response.json())
    .then(playData => {
 
-      clearOptions('actList');
-      clearOptions('sceneList');
-      clearOptions('playerList');
-      setPlayTitle(play);
+    
+
       
      
      const currentPlay = new playModule.play(playData.acts);
-     populatePlayersList(playData.persona);
+     currentPlay.clearOptions('actList');
+     currentPlay.clearOptions('sceneList');
+     currentPlay.clearOptions('playerList');
+     currentPlay.clearSceneHere();
+     currentPlay.clearPlayHere();
+     currentPlay.setPlayTitle(play);
+    
      
-    // const currentScene = new playModule.scene(playData.acts.scenes.speeches);
+     
+
+
     
    currentPlay.populateActDropDown();
+   currentPlay.populatePlayersList(playData.persona)
 
    const popActs = document.getElementById("actList");
    popActs.addEventListener('change',(e)=>{
-
       const currentAct = new playModule.act(playData.acts[e.target.value].scenes);
       currentAct.populateSceneDropDown();
       currentPlay.setActName(e.target.value);
-      const popScenes = document.getElementById("sceneList");
-      popScenes.addEventListener('change', (event) => {
-      currentAct.setSceneName(event.target.value);
-      const currentScene = new playModule.scene(currentAct[event.target.value].speeches);
-      currentScene.addSpeeches();
-         
-       })
 
-   
+      
+      const popScenes = document.getElementById("sceneList");
+         popScenes.addEventListener('change', (event) => {
+          
+            currentAct.setSceneName(event.target.value);
+          
+            const  currentScene = new playModule.scene(playData.acts[e.target.value].scenes[event.target.value].speeches);
+            const playersList = document.getElementById('playerList');
+         
+            playersList.addEventListener('click', (event2)=>{
+             currentPlay.clearSceneHere();
+               currentScene.showSpeeches(event2.target.value);
+               const button = document.getElementById('btnHighlight');
+               button.addEventListener('click', ()=>{
+                  const searchValue = document.getElementById('txtHighlight').value;
+
+                  var divsForHighlight = document.querySelectorAll('.speech');
+
+                  divsForHighlight.forEach((div)=>{
+                     currentScene.highlightText(searchValue,div);
+
+                  })
+
+               });
+
+
+            });
+         });
       });
    })
    .catch( error => console.error("Error fetching play data:", error));
-}
-
- 
-function populatePlayersList(persona){
-   const selectPlayer = document.getElementById('playerList');
-   persona.forEach( actor => {
-      const option = document.createElement('option');
-      option.value = actor.player;
-      option.textContent = actor.player;
-      selectPlayer.appendChild(option);
-   });
-}
-
-function setPlayTitle(playName){
-   const playHere = document.getElementById("playHere");
-   var name = '';
-   if(playName == 'hamlet'){
-      name = 'Hamlet';
-   }else if(playName =='jcaesar')
-   {
-      name = 'Julius Caesar'
-   }
-   let header = playHere.querySelector('h2');
-   header.textContent = name;
-}
-
-function clearOptions(id)
-{
-   const selectElement = document.getElementById(id);
-   selectElement.innerHTML = ''; //removes all options
 }
